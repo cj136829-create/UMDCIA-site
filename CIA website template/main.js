@@ -106,29 +106,42 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ---- Contact form handling ---- */
-  const form = document.getElementById('contactForm');
-  if (form) {
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
+ /* ---- Contact form handling ---- */
+const form = document.getElementById('contactForm');
 
-      const submitBtn = form.querySelector('.form-submit');
-      const original  = submitBtn.textContent;
+if (form) {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-      // Loading state
-      submitBtn.textContent = 'Sending…';
-      submitBtn.disabled = true;
-      submitBtn.style.opacity = '0.7';
+    const submitBtn = form.querySelector('.form-submit');
+    const original = submitBtn.textContent;
 
-      // Simulate async send (replace with real fetch/API call)
-      setTimeout(() => {
+    // Loading state
+    submitBtn.textContent = 'Sending…';
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = '0.7';
+
+    // Collect form data
+    const formData = new FormData(form);
+
+    try {
+      // Send to Formspree
+      const response = await fetch("https://formspree.io/f/mwvaklra", {
+        method: "POST",
+        body: formData,
+        headers: { "Accept": "application/json" }
+      });
+
+      if (response.ok) {
+        // Success UI
         submitBtn.textContent = '✓ Message Sent!';
         submitBtn.style.background = '#2a7a4b';
         submitBtn.style.opacity = '1';
 
-        // Show success message
         const success = document.createElement('p');
         success.textContent = 'Thank you for reaching out! A member of our team will be in touch soon.';
-        success.style.cssText = 'color:#2a7a4b;font-size:0.88rem;font-weight:500;margin-top:12px;text-align:center;';
+        success.style.cssText =
+          'color:#2a7a4b;font-size:0.88rem;font-weight:500;margin-top:12px;text-align:center;';
         form.appendChild(success);
 
         // Reset after delay
@@ -139,9 +152,21 @@ document.addEventListener('DOMContentLoaded', () => {
           submitBtn.style.background = '';
           success.remove();
         }, 4000);
-      }, 1200);
-    });
-  }
+
+      } else {
+        throw new Error("Formspree error");
+      }
+
+    } catch (error) {
+      // Error UI
+      submitBtn.textContent = 'Error — Try Again';
+      submitBtn.disabled = false;
+      submitBtn.style.opacity = '1';
+      submitBtn.style.background = '#8a1f1f';
+    }
+  });
+}
+
 
   /* ---- Smooth anchor scrolling ---- */
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
